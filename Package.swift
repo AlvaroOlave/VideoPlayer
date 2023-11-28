@@ -19,6 +19,10 @@ let package = Package(
         .target(
             name: "VideoPlayer",
             dependencies: ["LoadingDots",
-                           .product(name: "AutolayoutDSL", package: "AutoLayoutDSL")]),
+                           .product(name: "AutolayoutDSL", package: "AutoLayoutDSL")],
+            resources: [
+                .process("Media.xcassets"),
+            ]
+        ),
     ]
 )
