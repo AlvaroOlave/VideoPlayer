@@ -67,7 +67,7 @@ public class CompletePlayerView: SimplePlayerView {
     }()
     
     private lazy var progressView: VideoProgressView = {
-       let view = VideoProgressView(config: <#T##ProgressBarConfigInfo#>)
+        let view = VideoProgressView(config: config.progressBarConfig)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.delegate = self
         return view
