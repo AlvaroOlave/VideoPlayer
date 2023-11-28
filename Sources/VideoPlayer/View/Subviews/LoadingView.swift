@@ -34,7 +34,6 @@ extension LoadingView {
         loadingView.layout {
             $0.centerX == centerXAnchor
             $0.centerY == centerYAnchor
-            ($0.width & $0.height) == (88.0 * 24.0)
         }
     }
 }

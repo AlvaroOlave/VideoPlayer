@@ -34,14 +34,14 @@ public struct TimePlayerButtonInfo {
     public init(icon: DefaultIcon,
          tintColor:  UIColor? = nil,
          time: Float64 = 10.0) {
-        self.init(icon: UIImage(named: icon.rawValue),
+        self.init(icon: UIImage.secureImage(name: icon.rawValue),
                   tintColor: tintColor,
                   time: time)
     }
     
     init(icon: DefaultIcon) {
-        self.init(icon: UIImage(named: icon.rawValue),
-                  tintColor: UIColor(named: "iconTint"))
+        self.init(icon: UIImage.secureImage(name: icon.rawValue),
+                  tintColor: Colors.IconTint)
     }
 }
 
@@ -57,7 +57,7 @@ public struct PlayerButtonInfo {
     
     public init(icon: DefaultIcon,
          tintColor:  UIColor? = nil) {
-        self.init(icon: UIImage(named: icon.rawValue),
+        self.init(icon: UIImage.secureImage(name: icon.rawValue),
                   tintColor: tintColor)
     }
 }
@@ -69,11 +69,11 @@ public struct ProgressBarConfigInfo {
     public var timeLabelFont: UIFont
     public var timeLabelColor: UIColor?
     
-    public init(totalBarColor: UIColor? = UIColor(named: "interfaceBackground")?.withAlphaComponent(0.25),
-                loadedBarColor: UIColor? = UIColor(named: "interfaceBackground")?.withAlphaComponent(0.25),
-                currentBarColor: UIColor? = UIColor(named: "currentProgress"),
+    public init(totalBarColor: UIColor? = Colors.InterfaceBackground.withAlphaComponent(0.25),
+                loadedBarColor: UIColor? = Colors.InterfaceBackground.withAlphaComponent(0.25),
+                currentBarColor: UIColor? = Colors.CurrentProgress,
                 timeLabelFont: UIFont = .systemFont(ofSize: 14, weight: .bold),
-                timeLabelColor: UIColor? = UIColor(named: "iconTint")) {
+                timeLabelColor: UIColor? = Colors.IconTint) {
         self.totalBarColor = totalBarColor
         self.loadedBarColor = loadedBarColor
         self.currentBarColor = currentBarColor
@@ -102,22 +102,22 @@ public struct VideoPlayerConfig {
     
     public init(url: URL,
                 videoTitle: String,
-                titleColor: UIColor? = UIColor(named: "titleColor"),
-                interfaceBackgroundColor: UIColor? = UIColor(named: "interfaceBackground")?.withAlphaComponent(0.5),
+                titleColor: UIColor? = Colors.TitleColor,
+                interfaceBackgroundColor: UIColor? = Colors.InterfaceBackground.withAlphaComponent(0.5),
                 playButton: PlayerButtonInfo = PlayerButtonInfo(icon: .play,
-                                                                tintColor: UIColor(named: "iconTint")),
+                                                                tintColor: Colors.IconTint),
                 pauseButton: PlayerButtonInfo = PlayerButtonInfo(icon: .pause,
-                                                                 tintColor: UIColor(named: "iconTint")),
+                                                                 tintColor: Colors.IconTint),
                 backButton: TimePlayerButtonInfo = TimePlayerButtonInfo(icon: .back,
-                                                                        tintColor: UIColor(named: "iconTint")),
+                                                                        tintColor: Colors.IconTint),
                 forthButton: TimePlayerButtonInfo = TimePlayerButtonInfo(icon: .forth,
-                                                                         tintColor: UIColor(named: "iconTint")),
+                                                                         tintColor: Colors.IconTint),
                 fullScreenButton: PlayerButtonInfo = PlayerButtonInfo(icon: .fullScreen,
-                                                                      tintColor: UIColor(named: "iconTint")),
+                                                                      tintColor: Colors.IconTint),
                 embeddedButton: PlayerButtonInfo = PlayerButtonInfo(icon: .embedded,
-                                                                    tintColor: UIColor(named: "iconTint")),
+                                                                    tintColor: Colors.IconTint),
                 fullScreenNavBackButton: PlayerButtonInfo = PlayerButtonInfo(icon: .fullScreenNavBack,
-                                                                             tintColor: UIColor(named: "iconTint")),
+                                                                             tintColor: Colors.IconTint),
                 progressBarConfig: ProgressBarConfigInfo = ProgressBarConfigInfo(),
                 startAutoPlay: Bool = false,
                 repeatAfterEnd: Bool = true) {

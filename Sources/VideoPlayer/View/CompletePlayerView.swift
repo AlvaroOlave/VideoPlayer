@@ -256,7 +256,7 @@ private extension CompletePlayerView {
         if let container = self.superview as? UIStackView {
             let fakeView = UIView(frame: self.bounds)
             fakeView.translatesAutoresizingMaskIntoConstraints = false
-            fakeView.backgroundColor = UIColor(named: "interfaceBackground")
+            fakeView.backgroundColor = Colors.InterfaceBackground
             fakeView.accessibilityIdentifier = "fakeView"
             fakeView.layout {
                 ($0.height & $0.width) == (self.frame.height * self.frame.width)
@@ -470,7 +470,7 @@ public final class CompletePlayerFullScreenViewController: UIViewController {
     
     private func setupView() {
         view.addSubview(videoPlayer)
-        view.backgroundColor = UIColor(named: "interfaceBackground")
+        view.backgroundColor = Colors.InterfaceBackground
         videoPlayer.fill(view)
         videoPlayer.interfaceView.addSubview(backArrow)
         videoPlayer.interfaceView.addSubview(titleLabel)

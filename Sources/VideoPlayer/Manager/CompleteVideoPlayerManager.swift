@@ -70,7 +70,7 @@ public class CompleteVideoPlayerManager: BaseVideoPlayerManager {
     override func startLoading() {
         super.startLoading()
         guard let asset = urlAsset else { return }
-        let status:AVKeyValueStatus = asset.statusOfValue(forKey: "tracks", error: nil)
+        let status: AVKeyValueStatus = asset.statusOfValue(forKey: "tracks", error: nil)
         if status == AVKeyValueStatus.loaded {
             if let item = playerItem {
                 item.addObserver(self, forKeyPath: "presentationSize", options: [.new], context: nil)

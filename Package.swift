@@ -21,7 +21,7 @@ let package = Package(
             dependencies: ["LoadingDots",
                            .product(name: "AutolayoutDSL", package: "AutoLayoutDSL")],
             resources: [
-                .process("../Media.xcassets"),
+                .process("Resorces/Media.xcassets"),
             ]
         ),
     ]

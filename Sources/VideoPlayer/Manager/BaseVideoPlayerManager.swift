@@ -128,10 +128,9 @@ public class BaseVideoPlayerManager : NSObject {
     }
     
     internal func startLoading() {
-        var error:NSError?
+        var error: NSError?
         guard let asset = urlAsset else { return }
         let status: AVKeyValueStatus = asset.statusOfValue(forKey: "tracks", error: &error)
-        
         if status == AVKeyValueStatus.loaded {
             assetDuration = CMTimeGetSeconds(asset.duration)
             
