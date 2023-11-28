@@ -21,53 +21,8 @@ public class CompletePlayerView: SimplePlayerView {
     internal lazy var videoPlayer = CompleteVideoPlayerManager()
     private var loadingView: LoadingView?
     
-    internal lazy var interfaceView: UIView = {
-       let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = config.interfaceBackgroundColor
-        return view
-    }()
-    
-    private lazy var mainActionButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.tintColor = config.playButton.tintColor
-        return button
-    }()
-    
-    private lazy var back10SecButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(config.backButton.icon?.withRenderingMode(.alwaysTemplate),
-                        for: .normal)
-        button.tintColor = config.backButton.tintColor
-        button.addTarget(self,
-                         action: #selector(backVideo10Sec),
-                         for: .touchUpInside)
-        return button
-    }()
-    
-    private lazy var forth10SecButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(config.forthButton.icon?.withRenderingMode(.alwaysTemplate),
-                        for: .normal)
-        button.tintColor = config.forthButton.tintColor
-        button.addTarget(self, action: #selector(forthVideo10Sec), for: .touchUpInside)
-        return button
-    }()
-    
-    private lazy var fullScreenButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(config.fullScreenButton.icon?.withRenderingMode(.alwaysTemplate),
-                        for: .normal)
-        button.tintColor = config.fullScreenButton.tintColor
-        return button
-    }()
-    
-    private lazy var progressView: VideoProgressView = {
-        let view = VideoProgressView(config: config.progressBarConfig)
+    internal lazy var interfaceView: VideoInterfaceView = {
+       let view = VideoInterfaceView(config: config, videoProgressDelegate: self)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.delegate = self
         return view
@@ -93,7 +48,6 @@ public class CompletePlayerView: SimplePlayerView {
         self.containerView = view
         self.containerViewController = viewController
         configureView()
-        configureInterface()
         configureTapGestures()
     }
     
@@ -114,101 +68,15 @@ private extension CompletePlayerView {
         interfaceView.fill(self)
     }
     
-    func configureInterface() {
-        interfaceView.addSubview(mainActionButton)
-        interfaceView.addSubview(back10SecButton)
-        interfaceView.addSubview(forth10SecButton)
-        interfaceView.addSubview(fullScreenButton)
-        interfaceView.addSubview(progressView)
-
-        mainActionButton.setImage(config.playButton.icon?.withRenderingMode(.alwaysTemplate), for: .normal)
-        mainActionButton.addTarget(self,
-                                   action: #selector(playVideo),
-                                   for: .touchUpInside)
-        mainActionButton.layout {
-            ($0.height & $0.width) == (24.0 * 24.0)
-            $0.centerX == interfaceView.centerXAnchor
-            $0.centerY == interfaceView.centerYAnchor
-        }
-        back10SecButton.layout {
-            ($0.height & $0.width) == (24.0 * 24.0)
-            $0.trailing == mainActionButton.leadingAnchor - 32.0
-            $0.centerY == mainActionButton.centerYAnchor
-        }
-        forth10SecButton.layout {
-            ($0.height & $0.width) == (24.0 * 24.0)
-            $0.leading == mainActionButton.trailingAnchor + 32.0
-            $0.centerY == mainActionButton.centerYAnchor
-        }
-        fullScreenButton.layout {
-            ($0.height & $0.width) == (24.0 * 24.0)
-            $0.trailing == interfaceView.safeAreaLayoutGuide.trailingAnchor - 16.0
-            $0.bottom == interfaceView.safeAreaLayoutGuide.bottomAnchor - 8.0
-        }
-        progressView.layout {
-            $0.leading == interfaceView.safeAreaLayoutGuide.leadingAnchor + 16.0
-            $0.trailing == fullScreenButton.leadingAnchor - 16.0
-            $0.bottom == interfaceView.safeAreaLayoutGuide.bottomAnchor - 12.0
-            $0.height == 40.0
-        }
-    }
-    
     func configureTapGestures() {
         let showTap = TapGestureRecognizerWithAssociatedBool(target: self, action: #selector(showInterface(sender:)), value: true)
         let hideTap = TapGestureRecognizerWithAssociatedBool(target: self, action: #selector(hideInterface(sender:)), value: true)
         self.addGestureRecognizer(showTap)
         interfaceView.addGestureRecognizer(hideTap)
-        fullScreenButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(goToFullScreen)))
     }
     
     func setFullScreenButtonIcon() {
-        let icon = inFullScreen ? config.embeddedButton.icon : config.fullScreenButton.icon
-        fullScreenButton.setImage(icon?.withRenderingMode(.alwaysTemplate), for: .normal)
-    }
-    
-    @objc func playVideo() {
-        videoPlayer.play()
-        startHideInterfaceForInactivity(3.0)
-    }
-    
-    @objc func pauseVideo() {
-        videoPlayer.pause()
-    }
-    
-    @objc func backVideo10Sec() {
-        videoPlayer.back10Sec()
-        startHideInterfaceForInactivity(6.0)
-    }
-    
-    @objc func forthVideo10Sec() {
-        videoPlayer.forth10Sec()
-        startHideInterfaceForInactivity(6.0)
-    }
-    
-    @objc func showInterface(sender: TapGestureRecognizerWithAssociatedBool) {
-        showInterface(animated: sender.value)
-    }
-    
-    @objc func hideInterface(sender: TapGestureRecognizerWithAssociatedBool) {
-        hideInterface(animated: sender.value)
-    }
-    
-    @objc func goToFullScreen() {
-        startHideInterfaceForInactivity(6.0)
-        inFullScreen = !inFullScreen
-        setFullScreenButtonIcon()
-        if inFullScreen {
-            if let viewController = containerViewController {
-                createFake()
-                let fullScreenVC = CompletePlayerFullScreenViewController(videoPlayer: self)
-                self.fullScreenContainerViewController = fullScreenVC
-                fullScreenVC.modalPresentationStyle = .fullScreen
-                fullScreenVC.modalTransitionStyle = .crossDissolve
-                viewController.present(fullScreenVC, animated: true)
-            }
-        } else {
-            returnToPartialScreen()
-        }
+        interfaceView.setFullScreen(inFullScreen)
     }
     
     func showInterface(animated: Bool = true, withInactivityTimer: Bool = true) {
@@ -271,7 +139,7 @@ private extension CompletePlayerView {
         }
     }
     
-    func returnToPartialScreen() {
+    func returnToEmbedded() {
         if let containerStackView = self.containerStackView,
            let containerView = self.containerView,
            let fullScreenContainerViewController = self.fullScreenContainerViewController,
@@ -293,7 +161,7 @@ private extension CompletePlayerView {
 
 extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
     public func didUpdateVideoDuration(_ duration: Double) {
-        progressView.setTotalTime(duration)
+        interfaceView.setTotalTime(duration)
     }
     
     public func showLoading(_ show: Bool) {
@@ -331,26 +199,21 @@ extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
     }
     
     public func didUpdateVideoStatus(_ status: AVPlayer.TimeControlStatus) {
-        mainActionButton.removeTarget(nil, action: nil, for: .touchUpInside)
-        mainActionButton.setImage(mainActionIconWithPlayerStatus(status)?.withRenderingMode(.alwaysTemplate),
-                                  for: .normal)
-        mainActionButton.addTarget(self,
-                                   action: mainActionSelectorWithPlayerStatus(status),
-                                   for: .touchUpInside)
+        interfaceView.updateInterfaceWith(status)
     }
 }
 
 extension CompletePlayerView: BaseVideoPlayerManagerDelegate {
-    public func downloadedProgress(progress: Double) {
-        progressView.updateLoadedProgress(progress)
-    }
-    
     public func readyToPlay() {
         videoPlayer.pause()
     }
     
+    public func downloadedProgress(progress: Double) {
+        interfaceView.updateLoadedProgress(progress)
+    }
+    
     public func didUpdateProgress(progress: Double) {
-        progressView.updateCurrentProgress(progress)
+        interfaceView.updateCurrentProgress(progress)
     }
     
     public func didFinishPlayItem() { }
@@ -368,43 +231,6 @@ extension CompletePlayerView: VideoProgressViewDelegate {
     
     func endSliding() {
         startHideInterfaceForInactivity(4.0)
-    }
-}
-
-private extension CompletePlayerView {
-    class TapGestureRecognizerWithAssociatedBool: UITapGestureRecognizer {
-        let value: Bool
-        
-        init(target: Any?, action: Selector?, value: Bool) {
-            self.value = value
-            super.init(target: target, action: action)
-        }
-    }
-    
-    func mainActionIconWithPlayerStatus(_ status: AVPlayer.TimeControlStatus) -> UIImage? {
-        switch status {
-        case .paused:
-            return config.playButton.icon
-        case .waitingToPlayAtSpecifiedRate:
-            return config.playButton.icon
-        case .playing:
-            return config.pauseButton.icon
-        @unknown default:
-            return config.playButton.icon
-        }
-    }
-    
-    func mainActionSelectorWithPlayerStatus(_ status: AVPlayer.TimeControlStatus) -> Selector {
-        switch status {
-        case .paused:
-            return #selector(playVideo)
-        case .waitingToPlayAtSpecifiedRate:
-            return #selector(playVideo)
-        case .playing:
-            return #selector(pauseVideo)
-        @unknown default:
-            return #selector(playVideo)
-        }
     }
 }
 
@@ -484,5 +310,61 @@ public final class CompletePlayerFullScreenViewController: UIViewController {
             $0.centerY == backArrow.centerYAnchor
             $0.leading == backArrow.trailingAnchor + 16.0
         }
+    }
+}
+
+extension CompletePlayerView: VideoInterfaceViewDelegate {
+    func playVideo() {
+        videoPlayer.play()
+        startHideInterfaceForInactivity(3.0)
+    }
+    
+    func pauseVideo() {
+        videoPlayer.pause()
+    }
+    
+    func backVideo() {
+        videoPlayer.back10Sec()
+        startHideInterfaceForInactivity(6.0)
+    }
+    
+    func forthVideo() {
+        videoPlayer.forth10Sec()
+        startHideInterfaceForInactivity(6.0)
+    }
+    
+    @objc func showInterface(sender: TapGestureRecognizerWithAssociatedBool) {
+        showInterface(animated: sender.value)
+    }
+    
+    @objc func hideInterface(sender: TapGestureRecognizerWithAssociatedBool) {
+        hideInterface(animated: sender.value)
+    }
+    
+    func goToFullScreen() {
+        startHideInterfaceForInactivity(6.0)
+        inFullScreen = !inFullScreen
+        setFullScreenButtonIcon()
+        if inFullScreen {
+            if let viewController = containerViewController {
+                createFake()
+                let fullScreenVC = CompletePlayerFullScreenViewController(videoPlayer: self)
+                self.fullScreenContainerViewController = fullScreenVC
+                fullScreenVC.modalPresentationStyle = .fullScreen
+                fullScreenVC.modalTransitionStyle = .crossDissolve
+                viewController.present(fullScreenVC, animated: true)
+            }
+        } else {
+            returnToEmbedded()
+        }
+    }
+}
+
+class TapGestureRecognizerWithAssociatedBool: UITapGestureRecognizer {
+    let value: Bool
+    
+    init(target: Any?, action: Selector?, value: Bool) {
+        self.value = value
+        super.init(target: target, action: action)
     }
 }
