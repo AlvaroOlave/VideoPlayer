@@ -78,7 +78,7 @@ public struct ProgressBarConfigInfo {
         self.loadedBarColor = loadedBarColor
         self.currentBarColor = currentBarColor
         self.timeLabelFont = timeLabelFont
-        self.timeLabelFont = timeLabelFont
+        self.timeLabelColor = timeLabelColor
     }
 }
 

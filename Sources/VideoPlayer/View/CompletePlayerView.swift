@@ -10,19 +10,24 @@ import UIKit
 import AVFoundation
 import AutolayoutDSL
 
-public class CompletePlayerView: SimplePlayerView {
+public class CompletePlayerView: UIView {
     
     private var videoPlayerHeight: NSLayoutConstraint?
     private weak var containerView: UIView?
     private weak var containerViewController: UIViewController?
-    private weak var containerStackView: UIStackView?
     private weak var fullScreenContainerViewController: UIViewController?
     internal var videoAspectRatio: Double?
-    internal lazy var videoPlayer = CompleteVideoPlayerManager()
+    internal lazy var videoPlayerManager = CompleteVideoPlayerManager()
     private var loadingView: LoadingView?
     
+    internal lazy var videoPlayer: SimplePlayerView = {
+        let view = SimplePlayerView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     internal lazy var interfaceView: VideoInterfaceView = {
-       let view = VideoInterfaceView(config: config, videoProgressDelegate: self)
+        let view = VideoInterfaceView(config: config, videoProgressDelegate: self)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.delegate = self
         return view
@@ -35,13 +40,18 @@ public class CompletePlayerView: SimplePlayerView {
     
     public init(config: VideoPlayerConfig) {
         self.config = config
-        super.init()
-        videoPlayer.completeDelegate = self
-        videoPlayer.delegate = self
-        videoPlayer.setup(BaseVideoPlayerConfig(config.url,
-                                                view: self,
-                                                startAutoPlay: config.startAutoPlay,
-                                                repeatAfterEnd: config.repeatAfterEnd))
+        super.init(frame: .zero)
+        videoPlayerManager.completeDelegate = self
+        videoPlayerManager.delegate = self
+        videoPlayerManager.setup(BaseVideoPlayerConfig(config.url,
+                                                       view: videoPlayer,
+                                                       startAutoPlay: config.startAutoPlay,
+                                                       repeatAfterEnd: config.repeatAfterEnd))
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     public func configureIn(_ view: UIView, viewController: UIViewController) {
@@ -53,7 +63,7 @@ public class CompletePlayerView: SimplePlayerView {
     
     public func pause() {
         if !inFullScreen {
-            videoPlayer.pause()
+            videoPlayerManager.pause()
         }
     }
 }
@@ -64,14 +74,16 @@ private extension CompletePlayerView {
         self.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
         videoPlayerHeight = self.heightAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.75)
         videoPlayerHeight?.isActive = true
-        addSubview(interfaceView)
-        interfaceView.fill(self)
+        addSubview(videoPlayer)
+        videoPlayer.fill(self)
+        videoPlayer.addSubview(interfaceView)
+        interfaceView.fill(videoPlayer)
     }
     
     func configureTapGestures() {
         let showTap = TapGestureRecognizerWithAssociatedBool(target: self, action: #selector(showInterface(sender:)), value: true)
         let hideTap = TapGestureRecognizerWithAssociatedBool(target: self, action: #selector(hideInterface(sender:)), value: true)
-        self.addGestureRecognizer(showTap)
+        videoPlayer.addGestureRecognizer(showTap)
         interfaceView.addGestureRecognizer(hideTap)
     }
     
@@ -120,41 +132,13 @@ private extension CompletePlayerView {
         inactivityTimer = nil
     }
     
-    func createFake() {
-        if let container = self.superview as? UIStackView {
-            let fakeView = UIView(frame: self.bounds)
-            fakeView.translatesAutoresizingMaskIntoConstraints = false
-            fakeView.backgroundColor = Colors.InterfaceBackground
-            fakeView.accessibilityIdentifier = "fakeView"
-            fakeView.layout {
-                ($0.height & $0.width) == (self.frame.height * self.frame.width)
-            }
-            if let originIndex = container.arrangedSubviews.firstIndex(of: self) {
-                self.containerStackView = container
-                container.insertArrangedSubview(fakeView, at: originIndex)
-                container.removeArrangedSubview(self)
-                self.removeFromSuperview()
-                container.layoutIfNeeded()
-            }
-        }
-    }
-    
     func returnToEmbedded() {
-        if let containerStackView = self.containerStackView,
-           let containerView = self.containerView,
-           let fullScreenContainerViewController = self.fullScreenContainerViewController,
-           let aspectRatio = self.videoAspectRatio,
-           let fakeViewIndex = containerStackView.arrangedSubviews.firstIndex(where: { $0.accessibilityIdentifier == "fakeView" }) {
-                fullScreenContainerViewController.dismiss(animated: false) { [unowned self] in
-                    let fakeView = containerStackView.arrangedSubviews[fakeViewIndex]
-                    containerStackView.insertArrangedSubview(self, at: fakeViewIndex)
-                    containerStackView.removeArrangedSubview(fakeView)
-                    fakeView.removeFromSuperview()
-                    self.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
-                    setHeightAspectRatio(aspectRatio)
-                    self.containerStackView = nil
-                    containerStackView.layoutIfNeeded()
-                }
+        self.fullScreenContainerViewController?.dismiss(animated: false) { [unowned self] in
+            self.insertSubview(videoPlayer, at: 0)
+            videoPlayer.fill(self)
+            UIView.animate(withDuration: 0.2) {
+                self.layoutIfNeeded()
+            }
         }
     }
 }
@@ -205,7 +189,7 @@ extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
 
 extension CompletePlayerView: BaseVideoPlayerManagerDelegate {
     public func readyToPlay() {
-        videoPlayer.pause()
+        videoPlayerManager.pause()
     }
     
     public func downloadedProgress(progress: Double) {
@@ -226,11 +210,57 @@ extension CompletePlayerView: BaseVideoPlayerManagerDelegate {
 extension CompletePlayerView: VideoProgressViewDelegate {
     func updateCurrentProgress(_ progress: Double) {
         cancelInactivityTimer()
-        videoPlayer.updateCurrentProgress(progress)
+        videoPlayerManager.updateCurrentProgress(progress)
     }
     
     func endSliding() {
         startHideInterfaceForInactivity(4.0)
+    }
+}
+
+extension CompletePlayerView: VideoInterfaceViewDelegate {
+    func playVideo() {
+        videoPlayerManager.play()
+        startHideInterfaceForInactivity(3.0)
+    }
+    
+    func pauseVideo() {
+        videoPlayerManager.pause()
+    }
+    
+    func backVideo() {
+        videoPlayerManager.back10Sec()
+        startHideInterfaceForInactivity(6.0)
+    }
+    
+    func forthVideo() {
+        videoPlayerManager.forth10Sec()
+        startHideInterfaceForInactivity(6.0)
+    }
+    
+    @objc func showInterface(sender: TapGestureRecognizerWithAssociatedBool) {
+        showInterface(animated: sender.value)
+    }
+    
+    @objc func hideInterface(sender: TapGestureRecognizerWithAssociatedBool) {
+        hideInterface(animated: sender.value)
+    }
+    
+    func goToFullScreen() {
+        startHideInterfaceForInactivity(6.0)
+        inFullScreen = !inFullScreen
+        setFullScreenButtonIcon()
+        if inFullScreen {
+            if let viewController = containerViewController {
+                let fullScreenVC = CompletePlayerFullScreenViewController(videoPlayer: self)
+                self.fullScreenContainerViewController = fullScreenVC
+                fullScreenVC.modalPresentationStyle = .fullScreen
+                fullScreenVC.modalTransitionStyle = .crossDissolve
+                viewController.present(fullScreenVC, animated: true)
+            }
+        } else {
+            returnToEmbedded()
+        }
     }
 }
 
@@ -295,67 +325,20 @@ public final class CompletePlayerFullScreenViewController: UIViewController {
     }
     
     private func setupView() {
-        view.addSubview(videoPlayer)
+        view.addSubview(videoPlayer.videoPlayer)
         view.backgroundColor = Colors.InterfaceBackground
-        videoPlayer.fill(view)
+        videoPlayer.videoPlayer.fill(view)
         videoPlayer.interfaceView.addSubview(backArrow)
         videoPlayer.interfaceView.addSubview(titleLabel)
         backArrow.layout {
             ($0.height & $0.width) == (24.0 * 24.0)
-            $0.top == videoPlayer.interfaceView.topAnchor + 16.0
+            $0.top == videoPlayer.interfaceView.safeAreaLayoutGuide.topAnchor + 16.0
             $0.leading == videoPlayer.interfaceView.safeAreaLayoutGuide.leadingAnchor + 16.0
         }
         titleLabel.layout {
             $0.height == 20.0
             $0.centerY == backArrow.centerYAnchor
             $0.leading == backArrow.trailingAnchor + 16.0
-        }
-    }
-}
-
-extension CompletePlayerView: VideoInterfaceViewDelegate {
-    func playVideo() {
-        videoPlayer.play()
-        startHideInterfaceForInactivity(3.0)
-    }
-    
-    func pauseVideo() {
-        videoPlayer.pause()
-    }
-    
-    func backVideo() {
-        videoPlayer.back10Sec()
-        startHideInterfaceForInactivity(6.0)
-    }
-    
-    func forthVideo() {
-        videoPlayer.forth10Sec()
-        startHideInterfaceForInactivity(6.0)
-    }
-    
-    @objc func showInterface(sender: TapGestureRecognizerWithAssociatedBool) {
-        showInterface(animated: sender.value)
-    }
-    
-    @objc func hideInterface(sender: TapGestureRecognizerWithAssociatedBool) {
-        hideInterface(animated: sender.value)
-    }
-    
-    func goToFullScreen() {
-        startHideInterfaceForInactivity(6.0)
-        inFullScreen = !inFullScreen
-        setFullScreenButtonIcon()
-        if inFullScreen {
-            if let viewController = containerViewController {
-                createFake()
-                let fullScreenVC = CompletePlayerFullScreenViewController(videoPlayer: self)
-                self.fullScreenContainerViewController = fullScreenVC
-                fullScreenVC.modalPresentationStyle = .fullScreen
-                fullScreenVC.modalTransitionStyle = .crossDissolve
-                viewController.present(fullScreenVC, animated: true)
-            }
-        } else {
-            returnToEmbedded()
         }
     }
 }
