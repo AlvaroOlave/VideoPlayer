@@ -136,9 +136,7 @@ private extension CompletePlayerView {
         self.fullScreenContainerViewController?.dismiss(animated: false) { [unowned self] in
             self.insertSubview(videoPlayer, at: 0)
             videoPlayer.fill(self)
-            UIView.animate(withDuration: 0.2) {
-                self.layoutIfNeeded()
-            }
+            
         }
     }
 }
@@ -269,11 +267,11 @@ public final class CompletePlayerFullScreenViewController: UIViewController {
     private let videoPlayer: CompletePlayerView
     
     override public var shouldAutorotate: Bool {
-        return false
+        return true
     }
     
     override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return (self.videoPlayer.videoAspectRatio ?? 0.0) > 1.0 ? .portrait : .landscapeRight
+        return (self.videoPlayer.videoAspectRatio ?? 0.0) > 1.0 ? .portrait : [.portrait, .landscapeRight, .landscapeLeft]
     }
     
     override public var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
