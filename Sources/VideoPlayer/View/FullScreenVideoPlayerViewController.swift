@@ -10,7 +10,7 @@ import AutolayoutDSL
 
 public final class FullScreenVideoPlayerViewController: UIViewController {
 
-    private let videoPlayer: CompletePlayerView
+    private let videoPlayer: VideoPlayerView
     
     override public var shouldAutorotate: Bool {
         return true
@@ -42,7 +42,7 @@ public final class FullScreenVideoPlayerViewController: UIViewController {
         return label
     }()
     
-    init(videoPlayer: CompletePlayerView) {
+    init(videoPlayer: VideoPlayerView) {
         self.videoPlayer = videoPlayer
         super.init(nibName: nil, bundle: nil)
     }

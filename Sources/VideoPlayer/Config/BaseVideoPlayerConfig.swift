@@ -9,12 +9,12 @@ import Foundation
 
 public struct BaseVideoPlayerConfig {
     let url: URL
-    let view: SimplePlayerView
+    let view: SimpleVideoPlayerView
     let startAutoPlay: Bool
     let repeatAfterEnd: Bool
     
     public init(_ url: URL,
-                view: SimplePlayerView,
+                view: SimpleVideoPlayerView,
                 startAutoPlay: Bool = true,
                 repeatAfterEnd: Bool = true) {
         self.url = url

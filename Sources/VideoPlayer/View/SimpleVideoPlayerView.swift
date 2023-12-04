@@ -1,5 +1,5 @@
 //
-//  SimplePlayerView.swift
+//  SimpleVideoPlayerView.swift
 //  
 //
 //  Created by Álvaro Olave on 22/11/23.
@@ -8,7 +8,7 @@
 import AVFoundation
 import UIKit
 
-public class SimplePlayerView: UIView {
+public class SimpleVideoPlayerView: UIView {
     
     public var player: AVPlayer? {
         get {

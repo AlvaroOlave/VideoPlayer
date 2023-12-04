@@ -8,7 +8,7 @@
 import AVFoundation
 import Foundation
 
-public protocol BaseVideoPlayerManagerDelegate: AnyObject {
+protocol BaseVideoPlayerManagerDelegate: AnyObject {
     func downloadedProgress(progress:Double)
     func readyToPlay()
     func didUpdateProgress(progress:Double)
@@ -28,12 +28,12 @@ public class BaseVideoPlayerManager : NSObject {
     private var videoOutput: AVPlayerItemVideoOutput?
     
     private var assetDuration: Double = 0.0
-    internal weak var playerView: SimplePlayerView?
+    internal weak var playerView: SimpleVideoPlayerView?
     
     private var autoRepeatPlay: Bool = true
     private var autoPlay: Bool = true
     
-    public weak var delegate: BaseVideoPlayerManagerDelegate?
+    weak var delegate: BaseVideoPlayerManagerDelegate?
     
     public var playerRate: Float = 1.0 {
         didSet {

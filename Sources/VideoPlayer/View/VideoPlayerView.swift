@@ -1,5 +1,5 @@
 //
-//  CompletePlayerView.swift
+//  VideoPlayerView.swift
 //  
 //
 //  Created by Álvaro Olave on 22/11/23.
@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import AutolayoutDSL
 
-public class CompletePlayerView: UIView {
+public class VideoPlayerView: UIView {
     
     private var videoPlayerHeight: NSLayoutConstraint?
     private weak var containerView: UIView?
@@ -18,10 +18,10 @@ public class CompletePlayerView: UIView {
     private weak var fullScreenContainerViewController: UIViewController?
     internal var videoAspectRatio: Double?
     internal lazy var videoPlayerManager = CompleteVideoPlayerManager()
-    private var loadingView: LoadingView?
+    private var loadingView: UIView?
     
-    internal lazy var videoPlayer: SimplePlayerView = {
-        let view = SimplePlayerView()
+    internal lazy var videoPlayer: SimpleVideoPlayerView = {
+        let view = SimpleVideoPlayerView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -68,7 +68,7 @@ public class CompletePlayerView: UIView {
     }
 }
 
-private extension CompletePlayerView {
+private extension VideoPlayerView {
     func configureView() {
         guard let containerView = self.containerView else { return }
         self.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
@@ -141,16 +141,16 @@ private extension CompletePlayerView {
     }
 }
 
-extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
-    public func didUpdateVideoDuration(_ duration: Double) {
+extension VideoPlayerView: CompleteVideoPlayerManagerDelegate {
+    func didUpdateVideoDuration(_ duration: Double) {
         interfaceView.setTotalTime(duration)
     }
     
-    public func showLoading(_ show: Bool) {
+    func showLoading(_ show: Bool) {
         self.isUserInteractionEnabled = !show
         if show {
             hideInterface(animated: false)
-            let loadingView = LoadingView()
+            let loadingView = config.customLoadingViewProvider?.loadingView() ?? LoadingView()
             addSubview(loadingView)
             loadingView.fill(self)
             self.loadingView = loadingView
@@ -161,7 +161,7 @@ extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
         }
     }
     
-    public func didUpdateVideoSize(_ size: CGSize) {
+    func didUpdateVideoSize(_ size: CGSize) {
         let roundedAspectRatio = ceil((size.height / size.width) * 100) / 100
         guard let constraint = videoPlayerHeight,
               ceil((constraint.multiplier) * 100) / 100 != roundedAspectRatio else { return }
@@ -180,32 +180,32 @@ extension CompletePlayerView: CompleteVideoPlayerManagerDelegate {
         }
     }
     
-    public func didUpdateVideoStatus(_ status: AVPlayer.TimeControlStatus) {
+    func didUpdateVideoStatus(_ status: AVPlayer.TimeControlStatus) {
         interfaceView.updateInterfaceWith(status)
     }
 }
 
-extension CompletePlayerView: BaseVideoPlayerManagerDelegate {
-    public func readyToPlay() {
+extension VideoPlayerView: BaseVideoPlayerManagerDelegate {
+    func readyToPlay() {
         videoPlayerManager.pause()
     }
     
-    public func downloadedProgress(progress: Double) {
+    func downloadedProgress(progress: Double) {
         interfaceView.updateLoadedProgress(progress)
     }
     
-    public func didUpdateProgress(progress: Double) {
+    func didUpdateProgress(progress: Double) {
         interfaceView.updateCurrentProgress(progress)
     }
     
-    public func didFinishPlayItem() { }
+    func didFinishPlayItem() { }
     
-    public func didFailPlayToEnd() { }
+    func didFailPlayToEnd() { }
     
-    public func didFail(error: Error?) { }
+    func didFail(error: Error?) { }
 }
 
-extension CompletePlayerView: VideoProgressViewDelegate {
+extension VideoPlayerView: VideoProgressViewDelegate {
     func updateCurrentProgress(_ progress: Double) {
         cancelInactivityTimer()
         videoPlayerManager.updateCurrentProgress(progress)
@@ -216,7 +216,7 @@ extension CompletePlayerView: VideoProgressViewDelegate {
     }
 }
 
-extension CompletePlayerView: VideoInterfaceViewDelegate {
+extension VideoPlayerView: VideoInterfaceViewDelegate {
     func playVideo() {
         videoPlayerManager.play()
         startHideInterfaceForInactivity(3.0)

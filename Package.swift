@@ -12,7 +12,7 @@ let package = Package(
             targets: ["VideoPlayer"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/AlvaroOlave/LoadingDots", .upToNextMajor(from: "0.0.1")),
+        .package(url: "https://github.com/AlvaroOlave/LoadingDots", .upToNextMajor(from: "0.0.2")),
         .package(url: "https://github.com/AlvaroOlave/AutoLayoutDSL", .upToNextMajor(from: "0.1.0")),
     ],
     targets: [

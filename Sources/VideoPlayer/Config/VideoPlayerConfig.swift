@@ -100,6 +100,8 @@ public struct VideoPlayerConfig {
     public let startAutoPlay: Bool
     public let repeatAfterEnd: Bool
     
+    public var customLoadingViewProvider: CustomLoadingViewProvider?
+    
     public init(url: URL,
                 videoTitle: String,
                 titleColor: UIColor? = Colors.TitleColor,
@@ -136,4 +138,8 @@ public struct VideoPlayerConfig {
         self.fullScreenNavBackButton = fullScreenNavBackButton
         self.progressBarConfig = progressBarConfig
     }
+}
+
+public protocol CustomLoadingViewProvider {
+    func loadingView() -> UIView
 }

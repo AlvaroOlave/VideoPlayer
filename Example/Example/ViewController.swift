@@ -8,14 +8,19 @@
 import UIKit
 import VideoPlayer
 import AutolayoutDSL
+import LoadingDots
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
-        let player = CompletePlayerView(config: VideoPlayerConfig(url: URL(string: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")!,
-                                                                  videoTitle: "Test"))
+        var config = VideoPlayerConfig(url: URL(string: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")!,
+                                       videoTitle: "Test")
+        config.customLoadingViewProvider = self
+        
+        let player = VideoPlayerView(config: config)
+        
         player.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(player)
         player.layout {
@@ -26,3 +31,8 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController: CustomLoadingViewProvider {
+    func loadingView() -> UIView {
+        return LoadingDotsView(configuration: DotsConfiguration(animation: .scale()))
+    }
+}

@@ -8,7 +8,7 @@
 import UIKit
 import AVFoundation
 
-public protocol CompleteVideoPlayerManagerDelegate: AnyObject {
+protocol CompleteVideoPlayerManagerDelegate: AnyObject {
     func didUpdateVideoSize(_ size: CGSize)
     func didUpdateVideoDuration(_ duration: Double)
     func didUpdateVideoStatus(_ status: AVPlayer.TimeControlStatus)
@@ -17,7 +17,7 @@ public protocol CompleteVideoPlayerManagerDelegate: AnyObject {
 
 public class CompleteVideoPlayerManager: BaseVideoPlayerManager {
     
-    public weak var completeDelegate: CompleteVideoPlayerManagerDelegate?
+    weak var completeDelegate: CompleteVideoPlayerManagerDelegate?
     private var loadingView: LoadingView?
     
     override func prepareToPlay() {
